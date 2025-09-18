@@ -1,0 +1,28 @@
+{
+  "name": "eii/laravel-installer",
+  "description": "A package to install Laravel applications with wizard steps.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Amit Haldar",
+      "email": "amit.haldar@eiitechsolutions.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Eii\\Installer\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Eii\\Installer\\InstallerServiceProvider"
+      ]
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "livewire/livewire": "^3.0"
+  }
+}
