@@ -37,15 +37,6 @@ class InstallerServiceProvider extends ServiceProvider
             \Livewire\Livewire::component('installer::install.create-admin', \Eii\Installer\Livewire\Install\CreateAdmin::class);
             \Livewire\Livewire::component('installer::install.finish', \Eii\Installer\Livewire\Install\Finish::class);
         }
-
-        // Optionally: register middleware
-        // $this->app['router']->aliasMiddleware('install', \Eii\Installer\Http\Middleware\InstallMiddleware::class);
-
-        // Optionally: auto-register Livewire components
-        // if (class_exists(\Livewire\Livewire::class)) {
-        //     \Livewire\Livewire::component('installer-wizard', \Eii\Installer\Livewire\InstallerWizard::class);
-        //     // register other installer components here...
-        // }
     }
 
     public function register(): void
