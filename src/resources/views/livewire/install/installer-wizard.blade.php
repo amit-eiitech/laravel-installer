@@ -1,10 +1,7 @@
 <div>
     @if (session('installer.error'))
-        <div class="error"> {{ session('installer.error') }}</div>
+        <div class="error my-2"> {{ session('installer.error') }}</div>
     @endif
-    @error('general')
-        <div class="error"> {{ $message }}</div>
-    @enderror
 
     <div class="flex gap-12 w-full max-w-screen-lg min-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-12">
 
@@ -52,7 +49,7 @@
 
                 <div class="mt-auto flex justify-end gap-3">
                     @if ($currentIndex === $steps->count() - 1)
-                        <button class="btn-primary mt-12" wire:click="finish">
+                        <button class="btn-primary mt-12" wire:click="completeStep">
                             Finish
                         </button>
                     @else

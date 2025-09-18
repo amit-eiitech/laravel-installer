@@ -47,12 +47,9 @@ class CreateAdmin extends Component
      */
     public function updated(string $property): void
     {
-        try {
-            $this->validateOnly($property);
+        $this->validateOnly($property);
+        if ($this->getErrorBag()->isEmpty($property)) {
             $this->dispatch('wizard.canProceed');
-        } catch (\Exception $e) {
-            $this->dispatch('wizard.cannotProceed');
-            $this->dispatch('wizard.error', ['message' => "Validation failed: {$e->getMessage()}"]);
         }
     }
 
@@ -62,11 +59,11 @@ class CreateAdmin extends Component
      * @return void
      */
     #[On('completeStep')]
-    public function createAndNext(): void
+    public function completeStep(): void
     {
-        try {
-            $this->validate();
+        $this->validate();
 
+        try {
             User::create([
                 'name' => $this->name,
                 'email' => $this->email,
@@ -76,12 +73,11 @@ class CreateAdmin extends Component
             $data = [
                 'name' => $this->name,
                 'email' => $this->email,
-                'password' => $this->password, // Note: Storing plain password in progress file for reference
+                'password' => $this->password,
             ];
 
             $this->dispatch('wizard.stepCompleted', ['data' => $data]);
         } catch (\Exception $e) {
-            $this->dispatch('wizard.cannotProceed');
             $this->dispatch('wizard.error', ['message' => "Failed to create admin user: {$e->getMessage()}"]);
         }
     }

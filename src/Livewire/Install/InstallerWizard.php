@@ -41,11 +41,6 @@ class InstallerWizard extends Component
         $savedStep = $this->progress['current_step'] ?? null;
         $savedIndex = $this->steps->search(fn($s) => $s['key'] === $savedStep);
 
-        if (session()->has('installer.error')) {
-            $this->addError('general', session('installer.error'));
-            session()->forget('installer.error');
-        }
-
         if ($savedIndex !== false && $this->currentIndex > $savedIndex + 1) {
             return redirect()->route('install.step', $this->steps[$savedIndex + 1]['key']);
         }
@@ -60,9 +55,8 @@ class InstallerWizard extends Component
     #[On('wizard.error')]
     public function handleError(array $payload): void
     {
-        $errorMessage = config('app.debug') ? $payload['message'] : 'An error occurred during installation. Please check your input and try again.';
-        $this->addError('general', $errorMessage);
-        session()->flash('installer.error', $errorMessage);
+        session()->flash('installer.error', $payload['message']);
+        $this->canProceed = false;
     }
 
     /**
@@ -95,12 +89,7 @@ class InstallerWizard extends Component
      */
     public function completeStep(): void
     {
-        try {
-            $this->dispatch('completeStep', $this->stepKey);
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
-            // silently ignore first-load dispatch failures
-        }
+        $this->dispatch('completeStep', $this->stepKey);
     }
 
     /**
@@ -147,9 +136,8 @@ class InstallerWizard extends Component
             $nextStepKey = $this->getNextStepKey();
             return redirect()->route('install.step', $nextStepKey ?? config('installer.redirect_after_install', '/'));
         } catch (\Throwable $th) {
-            $errorMessage = config('app.debug') ? $th->getMessage() : 'An error occurred during installation. Please check your input and try again.';
-            $this->addError('general', $errorMessage);
-            return redirect()->back()->with('installer.error', $errorMessage);
+            session()->flash('installer.error', $th->getMessage());
+            return redirect()->back();
         }
     }
 
@@ -208,7 +196,19 @@ class InstallerWizard extends Component
             ]);
 
             try {
-                DB::connection()->getPdo();
+                // Test connection and database existence
+                $dbName = DB::connection()->getDatabaseName();
+                if ($dbName !== $data['db_database']) {
+                    throw new \Exception("Connected to database '$dbName', but expected '{$data['db_database']}'.");
+                }
+            } catch (\Illuminate\Database\QueryException $e) {
+                if (str_contains($e->getMessage(), '1045')) {
+                    throw new \Exception("Database access denied: Invalid username or password.");
+                } elseif (str_contains($e->getMessage(), '1049')) {
+                    throw new \Exception("Database '{$data['db_database']}' does not exist.");
+                } else {
+                    throw new \Exception("Database connection failed: " . $e->getMessage());
+                }
             } catch (\Exception $e) {
                 throw new \Exception("Database connection failed: " . $e->getMessage());
             }
@@ -218,8 +218,15 @@ class InstallerWizard extends Component
                 if ($exitCode !== 0) {
                     throw new \Exception("Database migration failed with exit code: $exitCode");
                 }
+
+                if (config('installer.requirements.seed_database', false)) {
+                    $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
+                    if ($seedExitCode !== 0) {
+                        throw new \Exception("Database seeding failed with exit code: $seedExitCode");
+                    }
+                }
             } catch (\Exception $e) {
-                throw new \Exception("Migration error: " . $e->getMessage());
+                throw new \Exception("Migration/seed error: " . $e->getMessage());
             }
         }
 

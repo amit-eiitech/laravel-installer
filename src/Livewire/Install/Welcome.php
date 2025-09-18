@@ -44,12 +44,7 @@ class Welcome extends Component
     #[On('completeStep')]
     public function completeStep(): void
     {
-        try {
-            $this->dispatch('wizard.stepCompleted');
-        } catch (\Exception $e) {
-            $this->dispatch('wizard.cannotProceed');
-            $this->dispatch('wizard.error', ['message' => "Failed to complete welcome step: {$e->getMessage()}"]);
-        }
+        $this->dispatch('wizard.stepCompleted');
     }
 
     /**

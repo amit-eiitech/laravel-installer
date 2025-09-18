@@ -108,12 +108,9 @@ class EnvironmentSettings extends Component
      */
     public function updated(string $property): void
     {
-        try {
-            $this->validateOnly($property);
+        $this->validateOnly($property);
+        if ($this->getErrorBag()->isEmpty($property)) {
             $this->dispatch('wizard.canProceed');
-        } catch (\Exception $e) {
-            $this->dispatch('wizard.cannotProceed');
-            $this->dispatch('wizard.error', ['message' => "Validation failed: {$e->getMessage()}"]);
         }
     }
 
@@ -125,39 +122,34 @@ class EnvironmentSettings extends Component
     #[On('completeStep')]
     public function completeStep(): void
     {
-        try {
-            $this->validate();
+        $this->validate();
 
-            $data = ['app_url' => $this->appUrl];
+        $data = ['app_url' => $this->appUrl];
 
-            if ($this->isDatabaseRequired) {
-                $data = array_merge($data, [
-                    'db_connection' => $this->dbConnection,
-                    'db_host' => $this->dbHost,
-                    'db_port' => $this->dbPort,
-                    'db_database' => $this->dbDatabase,
-                    'db_username' => $this->dbUsername,
-                    'db_password' => $this->dbPassword,
-                ]);
-            }
-
-            if ($this->isMailRequired) {
-                $data = array_merge($data, [
-                    'mail_mailer' => $this->mailMailer,
-                    'mail_host' => $this->mailHost,
-                    'mail_port' => $this->mailPort,
-                    'mail_username' => $this->mailUsername,
-                    'mail_password' => $this->mailPassword,
-                    'mail_from_address' => $this->mailFromAddress,
-                    'mail_from_name' => $this->mailFromName,
-                ]);
-            }
-
-            $this->dispatch('wizard.stepCompleted', ['data' => $data]);
-        } catch (\Exception $e) {
-            $this->dispatch('wizard.cannotProceed');
-            $this->dispatch('wizard.error', ['message' => "Failed to complete step: {$e->getMessage()}"]);
+        if ($this->isDatabaseRequired) {
+            $data = array_merge($data, [
+                'db_connection' => $this->dbConnection,
+                'db_host' => $this->dbHost,
+                'db_port' => $this->dbPort,
+                'db_database' => $this->dbDatabase,
+                'db_username' => $this->dbUsername,
+                'db_password' => $this->dbPassword,
+            ]);
         }
+
+        if ($this->isMailRequired) {
+            $data = array_merge($data, [
+                'mail_mailer' => $this->mailMailer,
+                'mail_host' => $this->mailHost,
+                'mail_port' => $this->mailPort,
+                'mail_username' => $this->mailUsername,
+                'mail_password' => $this->mailPassword,
+                'mail_from_address' => $this->mailFromAddress,
+                'mail_from_name' => $this->mailFromName,
+            ]);
+        }
+
+        $this->dispatch('wizard.stepCompleted', ['data' => $data]);
     }
 
     /**

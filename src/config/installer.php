@@ -83,6 +83,7 @@ return [
         ],
         'create_admin' => true,     // True to use the 'create admin' step 
         'link_storage' => true,     // True to link storage
+        'seed_database' => true,    // Enable DB seeding after migrations
     ],
 
     /*

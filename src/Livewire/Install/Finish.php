@@ -4,7 +4,9 @@ namespace Eii\Installer\Livewire\Install;
 
 use Illuminate\Support\Facades\File;
 use Livewire\Component;
+use Livewire\Attributes\On;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
 
 class Finish extends Component
 {
@@ -23,13 +25,36 @@ class Finish extends Component
 
             if (File::exists($progressFile)) {
                 $this->settings = json_decode(File::get($progressFile), true)['data'] ?? [];
-                File::delete($progressFile);
+                try {
+                    File::delete($progressFile);
+                } catch (\Exception $e) {
+                    $this->dispatch('wizard.error', ['message' => "Failed to delete progress file: {$e->getMessage()}"]);
+                    return;
+                }
             }
 
-            File::put($lockFile, now()->toDateTimeString());
+            try {
+                File::put($lockFile, now()->toDateTimeString());
+            } catch (\Exception $e) {
+                $this->dispatch('wizard.error', ['message' => "Failed to create lock file: {$e->getMessage()}"]);
+                return;
+            }
+
+            $this->dispatch('wizard.canProceed');
         } catch (\Exception $e) {
             $this->dispatch('wizard.error', ['message' => "Failed to finalize installation: {$e->getMessage()}"]);
         }
+    }
+
+    /**
+     * Finish the wizard and redirect to the config->redirect url
+     *
+     */
+    #[On('completeStep')]
+    public function completeStep()
+    {
+        $redirect_url = config('installer.options.redirect_after_install', "/");
+        return redirect($redirect_url);
     }
 
     /**
