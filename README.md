@@ -1,8 +1,16 @@
 # Laravel Installer
 
+![Laravel Installer](https://eiitechsolutions.com/storage/packages/laravel-installer/banner-1.jpg)
+
 A multi-step wizard for seamless Laravel application installation. This package provides an intuitive interface to guide users through server requirement checks, environment configuration, database setup, and initial admin user creation using Livewire components.
 
+## Screenshots
 
+| | |
+|:--:|:--:|
+|<img width="1200" alt="laravel-installer step-1" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-1.webp">|<img width="1200" alt="laravel-installer step-2" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-2.webp">|
+<img width="1200" alt="laravel-installer step-3" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-3.webp">|<img width="1200" alt="laravel-installer step-4" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-4.webp">|
+<img width="1200" alt="laravel-installer step-5" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-5.webp">|
 
 ## Features
 
