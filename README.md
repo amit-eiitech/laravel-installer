@@ -2,7 +2,10 @@
 
 ![Laravel Installer](https://eiitechsolutions.com/storage/packages/laravel-installer/banner-1.jpg)
 
-A multi-step wizard for seamless Laravel application installation. This package provides an intuitive interface to guide users through server requirement checks, environment configuration, database setup, and initial admin user creation using Livewire components.
+This package features a multi-step wizard designed for a seamless Laravel application installation. It offers an intuitive interface that guides users through server requirement checks, environment configuration, database setup, and the creation of an initial admin user, all using Livewire components.
+
+By including the Laravel installer in your application, you can eliminate the need to assist your clients with server setup. Clients can independently check server requirements, update the .env file, migrate the database, and link storage, all through a step-by-step installation guide.
+
 
 ## Screenshots
 
@@ -14,14 +17,16 @@ A multi-step wizard for seamless Laravel application installation. This package 
 
 ## Features
 
-- Step-by-Step Wizard: User-friendly interface for guided installation.
-- Server Requirement Checks: Automatically verifies PHP version, extensions, and server configurations.
-- Environment Setup: Configures `.env` file with database credentials, app keys, and other essentials.
-- Database Migration and Seeding: Runs migrations and seeds the database with initial data.
-- Admin User Creation: Sets up a default administrator account securely.
-- Livewire Integration: Dynamic, real-time updates without page reloads.
-- Customizable: Easily extend or modify steps to fit your application's needs.
-- Error Handling: Graceful error messages and rollback options for failed installations.
+- **Easy Installation**: Easily Integrate in to your Laravel project.
+- **Step-by-Step Wizard**: User-friendly interface for guided installation.
+- **Server Requirement Checks**: Automatically verifies PHP version, extensions, and server configurations.
+- **Environment Setup**: Configures `.env` file with database credentials, app name, and other essentials.
+- **Database Migration and Seeding**: Runs migrations and seeds the database with initial data.
+- **Link-Storage**: Runs storage link (configurable).
+- **Admin User Creation**: Sets up a default administrator account securely.
+- **Livewire Integration**: Dynamic, real-time updates, data validations without page reloads.
+- **Customizable**: Easily extend or modify steps with additional livewire components to fit your application's needs.
+- **Error Handling**: Graceful error messages and rollback options for failed installations.
 
 
 
@@ -101,7 +106,7 @@ This package is open-sourced software licensed under the MIT license.
 
 ## Credits
 
-Amit Haldar (Eii Tech Solutions)
+Amit Haldar (Eii Tech Solutions https://eiitechsolutions.com)  
 Built with Laravel and Livewire
 
 If you find this package useful, consider starring the repository on GitHub!
