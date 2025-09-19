@@ -11,12 +11,12 @@ class InstallerServiceProvider extends ServiceProvider
         // Assets (CSS/JS/images etc.)
         $this->publishes([
             __DIR__ . '/resources/public' => public_path('vendor/installer'),
-        ], 'installer-assets');
+        ], 'assets');
 
         // Config
         $this->publishes([
             __DIR__ . '/config/installer.php' => config_path('installer.php'),
-        ], 'installer-config');
+        ], 'config');
 
         // Views
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'installer');
