@@ -185,51 +185,53 @@ class InstallerWizard extends Component
     private function runEnvironmentSetup(array $data): void
     {
         if (config('installer.requirements.environment.database')) {
-            $connection = $data['db_connection'];
+            if (empty($data['db_database'])) {
+                throw new \Exception("DB_DATABASE is missing. Please provide a database name.");
+            }
+
+            // 1️⃣ Write .env immediately with DB credentials
+            $this->updateEnvFile($data);
+
+            // 2️⃣ Reload config with new credentials
+            Artisan::call('config:clear');
             config([
-                'database.default' => $connection,
-                "database.connections.$connection.host" => $data['db_host'],
-                "database.connections.$connection.port" => $data['db_port'],
-                "database.connections.$connection.database" => $data['db_database'],
-                "database.connections.$connection.username" => $data['db_username'],
-                "database.connections.$connection.password" => $data['db_password'],
+                'database.connections.mysql.host' => $data['db_host'],
+                'database.connections.mysql.port' => $data['db_port'] ?? 3306,
+                'database.connections.mysql.database' => $data['db_database'],
+                'database.connections.mysql.username' => $data['db_username'],
+                'database.connections.mysql.password' => $data['db_password'],
             ]);
 
+            DB::purge('mysql');
+            DB::reconnect('mysql');
+
+            // 3️⃣ Check if the database exists by trying to get its name
             try {
-                // Test connection and database existence
                 $dbName = DB::connection()->getDatabaseName();
-                if ($dbName !== $data['db_database']) {
-                    throw new \Exception("Connected to database '$dbName', but expected '{$data['db_database']}'.");
-                }
-            } catch (\Illuminate\Database\QueryException $e) {
-                if (str_contains($e->getMessage(), '1045')) {
-                    throw new \Exception("Database access denied: Invalid username or password.");
-                } elseif (str_contains($e->getMessage(), '1049')) {
-                    throw new \Exception("Database '{$data['db_database']}' does not exist.");
-                } else {
-                    throw new \Exception("Database connection failed: " . $e->getMessage());
+                if (empty($dbName) || $dbName !== $data['db_database']) {
+                    throw new \Exception("Database '{$data['db_database']}' does not exist or cannot be accessed. Please create it and ensure credentials are correct.");
                 }
             } catch (\Exception $e) {
                 throw new \Exception("Database connection failed: " . $e->getMessage());
             }
 
-            try {
-                $exitCode = Artisan::call('migrate', ['--force' => true]);
-                if ($exitCode !== 0) {
-                    throw new \Exception("Database migration failed with exit code: $exitCode");
-                }
+            // 4️⃣ Run migrations
+            $exitCode = Artisan::call('migrate', ['--force' => true]);
+            if ($exitCode !== 0) {
+                throw new \Exception("Database migration failed with exit code: $exitCode");
+            }
 
-                if (config('installer.requirements.seed_database', false)) {
-                    $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
-                    if ($seedExitCode !== 0) {
-                        throw new \Exception("Database seeding failed with exit code: $seedExitCode");
-                    }
+            // 5️⃣ Optional seeding
+            if (config('installer.requirements.seed_database', false)) {
+                $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
+                if ($seedExitCode !== 0) {
+                    throw new \Exception("Database seeding failed with exit code: $seedExitCode");
                 }
-            } catch (\Exception $e) {
-                throw new \Exception("Migration/seed error: " . $e->getMessage());
             }
         }
 
+
+        // 6️⃣ Link storage if required
         if (config('installer.requirements.link_storage')) {
             try {
                 Artisan::call('storage:link');
@@ -237,8 +239,6 @@ class InstallerWizard extends Component
                 throw new \Exception("Storage link creation failed: " . $e->getMessage());
             }
         }
-
-        $this->updateEnvFile($data);
     }
 
     /**
