@@ -19,6 +19,8 @@ class InstallerWizard extends Component
     public int $currentIndex = 0;
     public array $progress = [];
     public bool $canProceed = true;
+    public bool $skippable = false;
+    public bool $showWaitScreen = false;
 
     /**
      * Initialize component with the current step and validate progress.
@@ -31,6 +33,7 @@ class InstallerWizard extends Component
         $this->steps = collect(config('installer.steps'));
         $this->stepKey = $step;
         $this->currentIndex = $this->steps->search(fn($s) => $s['key'] === $this->stepKey);
+        $this->skippable = $this->steps[$this->currentIndex]['optional'] ?? false;
 
         if ($this->currentIndex === false) {
             abort(404, "Invalid installer step.");
@@ -38,11 +41,40 @@ class InstallerWizard extends Component
 
         $this->loadProgress();
 
+        if (isset($this->progress['raw_env_data'])) {
+            // If progress file has error 
+            if (isset($this->progress['error'])) {
+                // show the error
+                session()->flash('installer.error', $this->progress['error']);
+
+                // Remove the error from the file
+                unset($this->progress['error']);
+                $this->saveProgress();
+            } else {
+                // If no error and has raw data,
+                // Move the raw data to completed data
+                $this->progress['data']['environment'] = $this->progress['raw_env_data'];
+
+                // remove raw data
+                unset($this->progress['raw_env_data']);
+
+                // Update the current step
+                $this->progress['current_step'] = "environment";
+
+                // Update the progress file
+                $this->saveProgress();
+
+                // Move to the next step
+                $savedIndex = $this->steps->search(fn($s) => $s['key'] === 'environment');
+                return $this->redirect(route('install.step', $this->steps[$savedIndex + 1]['key']));
+            }
+        }
+
         $savedStep = $this->progress['current_step'] ?? null;
         $savedIndex = $this->steps->search(fn($s) => $s['key'] === $savedStep);
 
         if ($savedIndex !== false && $this->currentIndex > $savedIndex + 1) {
-            return redirect()->route('install.step', $this->steps[$savedIndex + 1]['key']);
+            return $this->redirect(route('install.step', $this->steps[$savedIndex + 1]['key']));
         }
     }
 
@@ -67,7 +99,6 @@ class InstallerWizard extends Component
     #[On('wizard.canProceed')]
     public function enableNext(): void
     {
-        Log::info('wizard.canProceed dispatched');
         $this->canProceed = true;
     }
 
@@ -93,6 +124,16 @@ class InstallerWizard extends Component
     }
 
     /**
+     * Trigger step completion without any data.
+     *
+     * @return void
+     */
+    public function skipStep(): void
+    {
+        $this->saveStep();
+    }
+
+    /**
      * Render the installer wizard view with step data.
      *
      * @return \Illuminate\View\View
@@ -107,6 +148,7 @@ class InstallerWizard extends Component
         ]);
     }
 
+
     /**
      * Save step data and redirect to the next step or finish page.
      *
@@ -114,30 +156,46 @@ class InstallerWizard extends Component
      * @return \Illuminate\Http\RedirectResponse
      */
     #[On('wizard.stepCompleted')]
-    public function saveStep($payload = []): \Illuminate\Http\RedirectResponse
+    public function saveStep($payload = [])
     {
+        $this->showWaitScreen = true;
+
+        // Get the progress data
+        $progressFile = config('installer.options.progress_file');
+        $progress = File::exists($progressFile)
+            ? json_decode(File::get($progressFile), true)
+            : ['data' => []];
+
         try {
+
+            // In case of environment setup, 
             if ($this->stepKey === "environment") {
                 $this->runEnvironmentSetup($payload['data']);
             }
 
-            $progressFile = config('installer.options.progress_file');
-            $progress = File::exists($progressFile)
-                ? json_decode(File::get($progressFile), true)
-                : ['data' => []];
+            // In case of environment setup, 
+            if ($this->stepKey === "mail") {
+                $this->runMailSetup($payload['data'] ?? []);
+            }
 
+            // Save the progress data
             if (!empty($payload)) {
                 $progress['data'][$this->stepKey] = $payload;
             }
 
+            // Save the progress file
             $progress['current_step'] = $this->stepKey;
             File::put($progressFile, json_encode($progress, JSON_PRETTY_PRINT));
 
+            // Move to the next step
             $nextStepKey = $this->getNextStepKey();
-            return redirect()->route('install.step', $nextStepKey ?? config('installer.redirect_after_install', '/'));
+            return $this->redirect(route('install.step', $nextStepKey ?? config('installer.redirect_after_install', '/')));
         } catch (\Throwable $th) {
+            $progress['error'] = $th->getMessage();
+            File::put($progressFile, json_encode($progress, JSON_PRETTY_PRINT));
+            $this->showWaitScreen = false;
+
             session()->flash('installer.error', $th->getMessage());
-            return redirect()->back();
         }
     }
 
@@ -161,7 +219,10 @@ class InstallerWizard extends Component
         $progressFile = config('installer.options.progress_file');
         $this->progress = File::exists($progressFile)
             ? json_decode(File::get($progressFile), true)
-            : ['current_step' => $this->steps[0]['key'], 'data' => []];
+            : [
+                'current_step' => $this->steps[0]['key'],
+                'data' => [],
+            ];
         $this->saveProgress();
     }
 
@@ -189,10 +250,7 @@ class InstallerWizard extends Component
                 throw new \Exception("DB_DATABASE is missing. Please provide a database name.");
             }
 
-            // 1️⃣ Write .env immediately with DB credentials
-            $this->updateEnvFile($data);
-
-            // 2️⃣ Reload config with new credentials
+            // 1️⃣ Reload config with new credentials
             Artisan::call('config:clear');
             config([
                 'database.connections.mysql.host' => $data['db_host'],
@@ -205,7 +263,7 @@ class InstallerWizard extends Component
             DB::purge('mysql');
             DB::reconnect('mysql');
 
-            // 3️⃣ Check if the database exists by trying to get its name
+            // 2️⃣ Check if the database exists by trying to get its name
             try {
                 $dbName = DB::connection()->getDatabaseName();
                 if (empty($dbName) || $dbName !== $data['db_database']) {
@@ -215,13 +273,13 @@ class InstallerWizard extends Component
                 throw new \Exception("Database connection failed: " . $e->getMessage());
             }
 
-            // 4️⃣ Run migrations
-            $exitCode = Artisan::call('migrate', ['--force' => true]);
+            // 3️⃣ Run migrations
+            $exitCode = Artisan::call('migrate:fresh', ['--force' => true]);
             if ($exitCode !== 0) {
                 throw new \Exception("Database migration failed with exit code: $exitCode");
             }
 
-            // 5️⃣ Optional seeding
+            // 4️⃣ Optional seeding
             if (config('installer.requirements.seed_database', false)) {
                 $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
                 if ($seedExitCode !== 0) {
@@ -230,8 +288,7 @@ class InstallerWizard extends Component
             }
         }
 
-
-        // 6️⃣ Link storage if required
+        // 5️⃣ Link storage if required
         if (config('installer.requirements.link_storage')) {
             try {
                 Artisan::call('storage:link');
@@ -239,6 +296,26 @@ class InstallerWizard extends Component
                 throw new \Exception("Storage link creation failed: " . $e->getMessage());
             }
         }
+
+        // Save the raw env data just before updating env file
+        $this->progress['raw_env_data'] = $data;
+        $this->saveProgress();
+
+        // 6️⃣ Write .env immediately with DB credentials
+        $this->updateEnvSettings($data);
+    }
+
+    /**
+     * 
+     */
+    private function runMailSetup(array $data)
+    {
+        // Save the raw env data just before updating env file
+        $this->progress['raw_env_data'] = $data;
+        $this->saveProgress();
+
+        // 6️⃣ Write .env immediately with DB credentials
+        $this->updateMailSettings($data);
     }
 
     /**
@@ -248,7 +325,7 @@ class InstallerWizard extends Component
      * @throws \Exception If file operations fail.
      * @return void
      */
-    private function updateEnvFile(array $data): void
+    private function updateEnvSettings(array $data): void
     {
         $envPath = base_path('.env');
 
@@ -271,6 +348,35 @@ class InstallerWizard extends Component
             'DB_DATABASE' => $data['db_database'] ?? '',
             'DB_USERNAME' => $data['db_username'] ?? '',
             'DB_PASSWORD' => $data['db_password'] ?? '',
+        ];
+
+        foreach ($pairs as $key => $value) {
+            $pattern = "/^{$key}=.*$/m";
+            $env = preg_match($pattern, $env)
+                ? preg_replace($pattern, "{$key}={$value}", $env)
+                : $env . PHP_EOL . "{$key}={$value}";
+        }
+
+        try {
+            File::put($envPath, trim($env));
+        } catch (\Exception $e) {
+            throw new \Exception("Failed to write to .env file: " . $e->getMessage());
+        }
+    }
+
+    private function updateMailSettings(array $data): void
+    {
+        $envPath = base_path('.env');
+
+        try {
+            $env = File::exists($envPath) ? File::get($envPath) : '';
+        } catch (\Exception $e) {
+            throw new \Exception("Failed to read .env file: " . $e->getMessage());
+        }
+
+        $quoteIfNeeded = fn($value) => preg_match('/\s/', $value ?? '') ? '"' . addslashes($value) . '"' : $value;
+
+        $pairs = [
             'MAIL_MAILER' => $data['mail_mailer'] ?? 'smtp',
             'MAIL_HOST' => $data['mail_host'] ?? '',
             'MAIL_PORT' => $data['mail_port'] ?? '',

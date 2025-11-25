@@ -3,6 +3,7 @@
 return [
 
     'app_name' => 'Eii Laravel Installer',
+    'run_installer' => 'true',
 
     /*
     |--------------------------------------------------------------------------
@@ -20,31 +21,39 @@ return [
         [
             'key' => 'welcome',
             'label' =>  'Welcome',
-            'description' => 'Getting started',
+            'description' => 'Initialize',
             'component' => \Eii\Installer\Livewire\Install\Welcome::class,
         ],
         [
             'key' => 'requirements',
-            'label' => 'Server Requirements',
-            'description' => 'Check all necessary requirements',
+            'label' => 'Server requirements',
+            'description' => 'Make sure all necessary requirements are met',
             'component' => \Eii\Installer\Livewire\Install\ServerRequirements::class,
         ],
         [
             'key' => 'environment',
-            'label' => 'Environment Settings',
-            'description' => 'Gather environmental settings',
+            'label' => 'Environmental settings',
+            'description' => 'Collect environmental settings',
             'component' => \Eii\Installer\Livewire\Install\EnvironmentSettings::class,
         ],
         [
+            'key' => 'mail',
+            'label' => 'Mail Settings',
+            'description' => 'Outgoing mail settings',
+            'component' => \Eii\Installer\Livewire\Install\MailSettings::class,
+            'optional' => true,
+        ],
+        [
             'key' => 'admin',
-            'label' => 'Create Admin',
-            'description' => 'Create Admin User',
+            'label' => 'Create administrator',
+            'description' => 'Create admin user',
             'component' => \Eii\Installer\Livewire\Install\CreateAdmin::class,
+            'optional' => true,
         ],
         [
             'key' => 'finish',
             'label' => 'Finish',
-            'description' => 'Finish setup',
+            'description' => 'Complete the setup',
             'component' => \Eii\Installer\Livewire\Install\Finish::class,
         ],
     ],
@@ -78,10 +87,9 @@ return [
         'environment' => [
             'production' => true,       // True for production, False for Local
             'debug' => false,           // Set debug
-            'database' => true,         // Ask for mail details
-            'mail' => false,
+            'database' => true,         // Ask for database details. Set to false if there is no database. 
+            'mail' => true,
         ],
-        'create_admin' => true,     // True to use the 'create admin' step 
         'link_storage' => true,     // True to link storage
         'seed_database' => true,    // Enable DB seeding after migrations
     ],
@@ -96,5 +104,4 @@ return [
         'progress_file' => storage_path('install-progress.json'),
         'redirect_after_install' => '/',
     ],
-
 ];

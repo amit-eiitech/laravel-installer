@@ -34,6 +34,7 @@ class InstallerServiceProvider extends ServiceProvider
             \Livewire\Livewire::component('installer::install.welcome', \Eii\Installer\Livewire\Install\Welcome::class);
             \Livewire\Livewire::component('installer::install.server-requirements', \Eii\Installer\Livewire\Install\ServerRequirements::class);
             \Livewire\Livewire::component('installer::install.environment-settings', \Eii\Installer\Livewire\Install\EnvironmentSettings::class);
+            \Livewire\Livewire::component('installer::install.mail-settings', \Eii\Installer\Livewire\Install\MailSettings::class);
             \Livewire\Livewire::component('installer::install.create-admin', \Eii\Installer\Livewire\Install\CreateAdmin::class);
             \Livewire\Livewire::component('installer::install.finish', \Eii\Installer\Livewire\Install\Finish::class);
         }
