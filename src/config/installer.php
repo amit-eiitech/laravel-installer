@@ -3,7 +3,7 @@
 return [
 
     'app_name' => 'Eii Laravel Installer',
-    'run_installer' => 'true',
+    'run_installer' => true,
 
     /*
     |--------------------------------------------------------------------------

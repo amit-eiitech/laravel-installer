@@ -3,7 +3,7 @@
   "description": "A package to install Laravel applications with wizard steps.",
   "type": "library",
   "license": "MIT",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "authors": [
     {
       "name": "Amit Haldar",
