@@ -92,9 +92,20 @@ return [
     |--------------------------------------------------------------------------
     */
     'options' => [
+        'verify_admin_email' => false, // Set to true to set the admin email as verified in the database
         'lock_file' => storage_path('installed.lock'),
         'progress_file' => storage_path('install-progress.json'),
         'redirect_after_install' => '/',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Spatie Permission Integration
+    |--------------------------------------------------------------------------
+    */
+    'spatie' => [
+        'enabled' => false,       // Set to false to disable role assignment
+        'admin_role' => 'admin', // The role name to assign to the new admin
     ],
 
 ];
