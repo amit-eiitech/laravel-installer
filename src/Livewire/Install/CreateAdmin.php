@@ -64,11 +64,33 @@ class CreateAdmin extends Component
         $this->validate();
 
         try {
-            User::create([
+
+            $userData = [
                 'name' => $this->name,
                 'email' => $this->email,
                 'password' => Hash::make($this->password),
-            ]);
+            ];
+
+            // Only verify if the config says so
+            if (config('installer.options.verify_admin_email', true)) {
+                $userData['email_verified_at'] = now();
+            }
+
+            $user = User::create($userData);
+
+            // Check config and trait existence
+            $spatieConfig = config('installer.spatie');
+            
+            if ($spatieConfig['enabled'] && method_exists($user, 'assignRole')) {
+                $roleTable = config('permission.table_names.roles', 'roles');
+                $roleExists = \Illuminate\Support\Facades\DB::table($roleTable)
+                    ->where('name', $spatieConfig['admin_role'])
+                    ->exists();
+
+                if ($roleExists) {
+                    $user->assignRole($spatieConfig['admin_role']);
+                }
+            }
 
             $data = [
                 'name' => $this->name,
