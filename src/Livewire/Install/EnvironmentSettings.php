@@ -18,11 +18,6 @@ class EnvironmentSettings extends Component
     public ?string $dbUsername = null;
     public ?string $dbPassword = null;
 
-    /**
-     * Define validation rules based on configuration requirements.
-     *
-     * @return array
-     */
     protected function rules(): array
     {
         $rules = ['appUrl' => 'required|string'];
@@ -40,11 +35,6 @@ class EnvironmentSettings extends Component
         return $rules;
     }
 
-    /**
-     * Initialize component with saved progress and configuration.
-     *
-     * @return void
-     */
     public function mount(): void
     {
         $this->isDatabaseRequired = config('installer.requirements.environment.database', false);
@@ -71,12 +61,6 @@ class EnvironmentSettings extends Component
         $this->dispatch('wizard.canProceed');
     }
 
-    /**
-     * Validate updated properties and update proceed status.
-     *
-     * @param string $property Updated property name.
-     * @return void
-     */
     public function updated(string $property): void
     {
         $this->validateOnly($property);
@@ -85,14 +69,14 @@ class EnvironmentSettings extends Component
         }
     }
 
-    /**
-     * Validate and save environment settings, then proceed to next step.
-     *
-     * @return void
-     */
     #[On('completeStep')]
     public function completeStep(): void
     {
+        // 1. SANITIZZAZIONE: Rimuove spazi vuoti prima e dopo (Trim)
+        // Questo previene errori di copia-incolla
+        $this->sanitizeInputs();
+
+        // 2. VALIDAZIONE: Avviene sui dati già puliti
         $this->validate();
 
         $data = ['app_url' => $this->appUrl];
@@ -100,11 +84,23 @@ class EnvironmentSettings extends Component
         if ($this->isDatabaseRequired) {
             $data = array_merge($data, [
                 'db_connection' => $this->dbConnection,
-                'db_host' => $this->dbHost,
-                'db_port' => $this->dbPort,
-                'db_database' => $this->dbDatabase,
-                'db_username' => $this->dbUsername,
-                'db_password' => $this->dbPassword,
+                'db_host'       => $this->dbHost,
+                'db_port'       => $this->dbPort,
+                'db_database'   => $this->dbDatabase,
+                'db_username'   => $this->dbUsername,
+                'db_password'   => $this->formatEnvValue($this->dbPassword),
+            ]);
+        }
+
+        if ($this->isMailRequired) {
+            $data = array_merge($data, [
+                'mail_mailer'       => $this->mailMailer,
+                'mail_host'         => $this->mailHost,
+                'mail_port'         => $this->mailPort,
+                'mail_username'     => $this->formatEnvValue($this->mailUsername),
+                'mail_password'     => $this->formatEnvValue($this->mailPassword),
+                'mail_from_address' => $this->mailFromAddress,
+                'mail_from_name'    => $this->formatEnvValue($this->mailFromName),
             ]);
         }
 
@@ -112,10 +108,46 @@ class EnvironmentSettings extends Component
     }
 
     /**
-     * Render the environment settings view.
-     *
-     * @return \Illuminate\View\View
+     * Rimuove spazi bianchi all'inizio e alla fine di tutti i campi stringa.
      */
+    private function sanitizeInputs(): void
+    {
+        $this->appUrl = trim($this->appUrl);
+
+        if ($this->isDatabaseRequired) {
+            $this->dbHost = trim($this->dbHost);
+            $this->dbPort = trim($this->dbPort);
+            $this->dbDatabase = trim($this->dbDatabase);
+            $this->dbUsername = trim($this->dbUsername);
+            $this->dbPassword = $this->dbPassword ? trim($this->dbPassword) : null;
+        }
+
+        if ($this->isMailRequired) {
+            $this->mailHost = trim($this->mailHost);
+            $this->mailPort = trim($this->mailPort);
+            $this->mailUsername = $this->mailUsername ? trim($this->mailUsername) : null;
+            $this->mailPassword = $this->mailPassword ? trim($this->mailPassword) : null;
+            $this->mailFromAddress = trim($this->mailFromAddress);
+            $this->mailFromName = trim($this->mailFromName);
+        }
+    }
+
+    /**
+     * Helper to format values for .env file
+     */
+    private function formatEnvValue(?string $value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        if (preg_match('/\s/', $value) && !str_starts_with($value, '"')) {
+            return '"' . $value . '"';
+        }
+
+        return $value;
+    }
+
     #[Layout('layouts.installer')]
     public function render()
     {
