@@ -4,7 +4,7 @@
              $currentVersion = $requirements['php']['current'];
              $requiredVersion = $requirements['php']['required'];
          @endphp
-         <p class="font-semibold">PHP Version</p>
+         <p class="font-semibold">{{ __('PHP Version') }}</p>
          <div class="flex gap-2 items-center">
              <span class="font-semibold">{{ $currentVersion }}</span>
              @if (version_compare($currentVersion, $requiredVersion) >= 0)
@@ -23,7 +23,7 @@
      </div>
 
      {{-- Extensions --}}
-     <h2 class="border-b w-full pb-1 text-amber-500 mt-4">Extensions</h2>
+     <h2 class="border-b w-full pb-1 text-amber-500 mt-4">{{ __('Extensions') }}</h2>
      <div class="space-y-2">
          @foreach ($requirements['extensions'] as $key => $value)
              <div class="flex gap-2 justify-between items-center py-2">
@@ -46,7 +46,7 @@
      </div>
 
      {{-- Permissions --}}
-     <h2 class="border-b w-full pb-1 text-amber-500 mt-6">Permissions</h2>
+     <h2 class="border-b w-full pb-1 text-amber-500 mt-6">{{ __('Permissions') }}</h2>
      <div class="space-y-2">
          @foreach ($requirements['permissions'] as $key => $value)
              <div class="flex gap-2 justify-between items-center py-2">

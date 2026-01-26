@@ -10,8 +10,6 @@ use Livewire\Component;
 class EnvironmentSettings extends Component
 {
     public bool $isDatabaseRequired = false;
-    public bool $isMailRequired = false;
-
     public string $appUrl = '';
     public string $dbConnection = 'mysql';
     public string $dbHost = '127.0.0.1';
@@ -19,13 +17,6 @@ class EnvironmentSettings extends Component
     public ?string $dbDatabase = null;
     public ?string $dbUsername = null;
     public ?string $dbPassword = null;
-    public string $mailMailer = 'smtp';
-    public string $mailHost = '127.0.0.1';
-    public string $mailPort = '587';
-    public ?string $mailUsername = null;
-    public ?string $mailPassword = null;
-    public ?string $mailFromAddress = null;
-    public ?string $mailFromName = null;
 
     protected function rules(): array
     {
@@ -41,25 +32,12 @@ class EnvironmentSettings extends Component
             ]);
         }
 
-        if ($this->isMailRequired) {
-            $rules = array_merge($rules, [
-                'mailMailer' => 'required|string',
-                'mailHost' => 'required|string',
-                'mailPort' => 'required|numeric',
-                'mailUsername' => 'required|string',
-                'mailPassword' => 'required|string',
-                'mailFromAddress' => 'required|email',
-                'mailFromName' => 'required|string',
-            ]);
-        }
-
         return $rules;
     }
 
     public function mount(): void
     {
         $this->isDatabaseRequired = config('installer.requirements.environment.database', false);
-        $this->isMailRequired = config('installer.requirements.environment.mail', false);
 
         try {
             $progressFile = config('installer.options.progress_file');
@@ -74,13 +52,6 @@ class EnvironmentSettings extends Component
                 $this->dbDatabase = $data['db_database'] ?? $this->dbDatabase;
                 $this->dbUsername = $data['db_username'] ?? $this->dbUsername;
                 $this->dbPassword = $data['db_password'] ?? $this->dbPassword;
-                $this->mailMailer = $data['mail_mailer'] ?? $this->mailMailer;
-                $this->mailHost = $data['mail_host'] ?? $this->mailHost;
-                $this->mailPort = $data['mail_port'] ?? $this->mailPort;
-                $this->mailUsername = $data['mail_username'] ?? $this->mailUsername;
-                $this->mailPassword = $data['mail_password'] ?? $this->mailPassword;
-                $this->mailFromAddress = $data['mail_from_address'] ?? $this->mailFromAddress;
-                $this->mailFromName = $data['mail_from_name'] ?? $this->mailFromName;
             }
         } catch (\Exception $e) {
             $this->dispatch('wizard.error', ['message' => "Failed to load progress: {$e->getMessage()}"]);

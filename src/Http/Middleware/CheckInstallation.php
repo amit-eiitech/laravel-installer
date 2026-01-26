@@ -16,6 +16,10 @@ class CheckInstallation
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (!config('installer.run_installer')) {
+            return redirect('/');
+        }
+
         $lockFile = config('installer.options.lock_file');
 
         // If already installed → redirect home
