@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Illuminate\Database\Seeder;
 
 class InstallerWizard extends Component
 {
@@ -119,6 +120,7 @@ class InstallerWizard extends Component
         $this->showWaitScreen = true;
 
         $progressFile = config('installer.options.progress_file');
+        
         $progress = File::exists($progressFile)
             ? json_decode(File::get($progressFile), true)
             : ['data' => []];
@@ -138,17 +140,28 @@ class InstallerWizard extends Component
             }
 
             $progress['current_step'] = $this->stepKey;
+
             File::put($progressFile, json_encode($progress, JSON_PRETTY_PRINT));
 
             $nextStepKey = $this->getNextStepKey();
-            return $this->redirect(route('install.step', $nextStepKey ?? config('installer.redirect_after_install', '/')));
-        } catch (\Throwable $th) {
 
-            $progress['error'] = $th->getMessage();
+            return $this->redirect(route('install.step', $nextStepKey ?? config('installer.redirect_after_install', '/')));
+
+        } catch (\Throwable $th) {
+            
+            // Generate user-friendly message
+            $friendlyMessage = $this->friendlyErrorMessage($th);
+
+            // Log the raw technical error for developers
+            Log::error("Installer Failed at step [{$this->stepKey}]: " . $th->getMessage(), [
+                'exception' => $th
+            ]);
+
+            $progress['error'] = $friendlyMessage;
             File::put($progressFile, json_encode($progress, JSON_PRETTY_PRINT));
             $this->showWaitScreen = false;
 
-            session()->flash('installer.error', $th->getMessage());
+            session()->flash('installer.error', $friendlyMessage);
         }
     }
 
@@ -208,10 +221,43 @@ class InstallerWizard extends Component
                 throw new \Exception("Database migration failed.");
             }
 
-            if (config('installer.requirements.seed_database', false)) {
-                $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
-                if ($seedExitCode !== 0) {
-                    throw new \Exception("Database seeding failed.");
+            // Run Dynamic Seeding inside a Transaction
+            $seedingConfig = config('installer.requirements.seeding');
+            
+            if ($seedingConfig && ($seedingConfig['enabled'] ?? false)) {
+                
+                // start transaction
+                DB::beginTransaction();
+
+                try {
+                    $classes = $seedingConfig['classes'] ?? [];
+
+                    if (empty($classes)) {
+                        $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
+                        if ($seedExitCode !== 0) {
+                            throw new \Exception("Default seeding failed: " . Artisan::output());
+                        }
+                    } else {
+                        foreach ($classes as $class) {
+                            if (class_exists($class) && is_subclass_of($class, Seeder::class)) {
+                                $seedExitCode = Artisan::call('db:seed', ['--class' => $class, '--force' => true]);
+                                if ($seedExitCode !== 0) {
+                                    throw new \Exception("Seeding failed for class [{$class}]: " . Artisan::output());
+                                }
+                            } else {
+                                Log::warning("Installer: Seeder class [{$class}] not found or invalid. Skipping.");
+                            }
+                        }
+                    }
+
+                    // if we reach here, all seeders ran successfully
+                    DB::commit();
+
+                } catch (\Throwable $e) {
+                    // on error, rollback the transaction
+                    DB::rollBack();
+                    Log::error("Seeding rolled back due to error: " . $e->getMessage());
+                    throw $e; // rethrow the exception
                 }
             }
         }
