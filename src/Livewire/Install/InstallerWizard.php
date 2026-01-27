@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Illuminate\Database\Seeder;
 
 class InstallerWizard extends Component
 {
@@ -159,7 +160,7 @@ class InstallerWizard extends Component
             } catch (\Exception $e) {
                 // Log raw details but throw friendly exception
                 Log::error("Database connection failed: " . $e->getMessage());
-                throw new \Exception("We couldn’t connect to your database. Please check your host, port, database name, username and password.");
+                throw new \Exception("We couldn't connect to your database. Please check your host, port, database name, username and password.");
             }
 
             $exitCode = Artisan::call('migrate', ['--force' => true]);
@@ -167,12 +168,45 @@ class InstallerWizard extends Component
                 throw new \Exception("Database migration failed. Please ensure your database is accessible and try again.");
             }
 
-            if (config('installer.requirements.seed_database', false)) {
-                $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
-                if ($seedExitCode !== 0) {
-                    throw new \Exception("Database seeding failed. Please check your seeders and try again.");
+            // Run Dynamic Seeding inside a Transaction
+            $seedingConfig = config('installer.requirements.seeding');
+            if ($seedingConfig && ($seedingConfig['enabled'] ?? false)) {
+                
+                // Start a transaction to ensure atomicity
+                DB::beginTransaction();
+
+                try {
+                    $classes = $seedingConfig['classes'] ?? [];
+
+                    if (empty($classes)) {
+                        $seedExitCode = Artisan::call('db:seed', ['--force' => true]);
+                        if ($seedExitCode !== 0) {
+                            throw new \Exception("Default seeding failed: " . Artisan::output());
+                        }
+                    } else {
+                        foreach ($classes as $class) {
+                            if (class_exists($class) && is_subclass_of($class, Seeder::class)) {
+                                $seedExitCode = Artisan::call('db:seed', ['--class' => $class, '--force' => true]);
+                                if ($seedExitCode !== 0) {
+                                    throw new \Exception("Seeding failed for class [{$class}]: " . Artisan::output());
+                                }
+                            } else {
+                                Log::warning("Installer: Seeder class [{$class}] not found or invalid. Skipping.");
+                            }
+                        }
+                    }
+
+                    // If we reach here, all seeders ran successfully
+                    DB::commit();
+
+                } catch (\Throwable $e) {
+                    // Rollback on any error during seeding
+                    DB::rollBack();
+                    Log::error("Seeding rolled back due to error: " . $e->getMessage());
+                    throw $e; 
                 }
             }
+
         }
 
         if (config('installer.requirements.link_storage')) {
