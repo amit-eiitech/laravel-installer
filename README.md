@@ -15,6 +15,26 @@ By including the Laravel installer in your application, you can eliminate the ne
 <img width="1200" alt="laravel-installer step-3" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-3.webp">|<img width="1200" alt="laravel-installer step-4" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-4.webp">|
 <img width="1200" alt="laravel-installer step-5" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-5.webp">|
 
+## ✨ What’s New in v1.1.2
+### 1️⃣ Loading State for Action Buttons
+
+- Added loading indicators to step action buttons (Next / Finish).
+- Improves user experience during time-consuming operations.
+- Clearly informs users that processing is in progress and prevents duplicate submissions.
+
+### 2️⃣ Improved Environment Input Handling
+
+- Automatic trimming of input values to prevent validation errors caused by trailing spaces (common when copying & pasting).
+- Quoted environment values when saving to .env, ensuring:
+    - SMTP passwords containing spaces work correctly
+    - No unexpected server errors (HTTP 500) during mail configuration
+
+## 3️⃣ Spatie Permission Compatibility
+
+- Added compatibility with spatie/laravel-permission
+- Ensures smooth integration for applications using role & permission management
+- Merged via PR #8 (thanks @vince844 🙌)
+
 ## Features
 
 - **Easy Installation**: Easily Integrate in to your Laravel project.
