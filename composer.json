@@ -1,5 +1,5 @@
 {
-  "name": "eii/laravel-installer",
+  "name": "vince844/laravel-installer",
   "description": "A package to install Laravel applications with wizard steps.",
   "type": "library",
   "license": "MIT",
