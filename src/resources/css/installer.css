@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@source "../views/**/*.blade.php";
+@source "../../Livewire/**/*.php";
+
+@theme {
+    /* Base Font Family */
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Open Sans, Helvetica Neue, sans-serif;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer base {
+    * {
+        @apply border-slate-200;
+    }
+
+    body {
+        @apply text-slate-700 antialiased;
+    }
+
+    label {
+        @apply block mb-1 text-sm text-slate-500 font-medium;
+    }
+
+    input[type=text],
+    input[type=email],
+    input[type=password],
+    select {
+        @apply w-full rounded-lg px-3 py-2 outline-none border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 disabled:bg-slate-50 disabled:text-slate-400 transition-all duration-200;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply min-w-32 cursor-pointer bg-slate-800 text-white font-bold text-center px-6 py-2.5 rounded-xl active:scale-95 disabled:pointer-events-none disabled:bg-slate-200 disabled:text-slate-400 transition-all duration-200 shadow-md hover:bg-slate-900 hover:shadow-lg;
+    }
+
+    .error {
+        @apply text-sm text-red-500 font-medium;
+    }
+
+    .hint {
+        @apply text-xs text-slate-400 mt-1;
+    }
+
+    .link {
+        @apply cursor-pointer text-sm text-emerald-600 underline-offset-4 hover:text-emerald-700 hover:underline transition-all duration-200;
+    }
+
+    .group-header {
+        @apply border-b border-slate-100 w-full pb-2 mb-4 text-xs font-bold uppercase tracking-widest text-slate-400;
+    }
+}

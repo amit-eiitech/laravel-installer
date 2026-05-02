@@ -1,5 +1,11 @@
 # Laravel Installer
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/eii/laravel-installer.svg?style=flat-square)](https://packagist.org/packages/eii/laravel-installer)
+[![Total Downloads](https://img.shields.io/packagist/dt/eii/laravel-installer.svg?style=flat-square)](https://packagist.org/packages/eii/laravel-installer)
+[![PHP Version Requirement](https://img.shields.io/packagist/php-v/eii/laravel-installer.svg?style=flat-square)](https://packagist.org/packages/eii/laravel-installer)
+[![Laravel Version](https://img.shields.io/badge/laravel-%3E%3D%2010.0-red?style=flat-square)](https://packagist.org/packages/eii/laravel-installer)
+[![License](https://img.shields.io/packagist/l/eii/laravel-installer.svg?style=flat-square)](https://packagist.org/packages/eii/laravel-installer)
+
 ![Laravel Installer](https://eiitechsolutions.com/storage/packages/laravel-installer/banner-1.jpg)
 
 This package features a multi-step wizard designed for a seamless Laravel application installation. It offers an intuitive interface that guides users through server requirement checks, environment configuration, database setup, and the creation of an initial admin user, all using Livewire components.
@@ -100,11 +106,34 @@ The configuration file is located at `config/laravel-installer.php`. Key options
 
 ## Troubleshooting
 
-- Installation Fails on Requirements: Ensure your server meets the listed requirements. Check the Laravel documentation for setup guides.
-- Database Connection Issues: Verify your `.env` credentials and that the database server is running.
-- Livewire Not Working: Make sure Livewire is properly installed and assets are published.
-- For more help, check the issues on GitHub or open a new one.
+- **Resetting the Installer**: During development, you can reset the installation state by clearing sessions, progress, and lock files:
+  ```bash
+  php artisan installer:reset
+  ```
+- **Installation Fails on Requirements**: Ensure your server meets the listed requirements. Check the Laravel documentation for setup guides.
+- **Database Connection Issues**: Verify your `.env` credentials and that the database server is running.
+- **Livewire Not Working**: Make sure Livewire is properly installed and assets are published.
+- **For more help, check the issues on GitHub or open a new one.**
 
+
+## Development
+
+If you want to modify the styling of the installer, you can rebuild the CSS using Tailwind CSS:
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Build the assets:
+   ```bash
+   npm run build
+   ```
+
+3. For real-time development:
+   ```bash
+   npm run watch
+   ```
 
 ## Contributing
 

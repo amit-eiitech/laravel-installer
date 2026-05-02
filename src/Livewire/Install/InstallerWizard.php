@@ -194,6 +194,28 @@ class InstallerWizard extends Component
                 throw new \Exception("DB_DATABASE is missing. Please provide a database name.");
             }
 
+            // 1. Test connection with a temporary configuration
+            try {
+                // Clone current mysql config and update with user data
+                $testConfig = config('database.connections.mysql');
+                $testConfig['host'] = $data['db_host'];
+                $testConfig['port'] = $data['db_port'] ?? 3306;
+                $testConfig['database'] = $data['db_database'];
+                $testConfig['username'] = $data['db_username'];
+                $testConfig['password'] = $data['db_password'];
+
+                config(['database.connections.installer_test' => $testConfig]);
+                
+                // Force a fresh connection test
+                DB::purge('installer_test');
+                DB::connection('installer_test')->getPdo();
+
+            } catch (\Throwable $e) {
+                Log::error("Installer: Database connection failed: " . $e->getMessage());
+                throw new \Exception("Could not connect to the database. Please verify your credentials and ensure the database '{$data['db_database']}' exists.");
+            }
+
+            // 2. If connection is successful, apply to global config and proceed
             Artisan::call('config:clear');
             config([
                 'database.connections.mysql.host' => $data['db_host'],
@@ -205,16 +227,6 @@ class InstallerWizard extends Component
 
             DB::purge('mysql');
             DB::reconnect('mysql');
-
-            try {
-                $dbName = DB::connection()->getDatabaseName();
-                if (empty($dbName) || $dbName !== $data['db_database']) {
-                    throw new \Exception("Database '{$data['db_database']}' does not exist or cannot be accessed.");
-                }
-            } catch (\Exception $e) {
-                Log::error("Database connection failed: " . $e->getMessage());
-                throw new \Exception("We couldn’t connect to your database. Please check your credentials.");
-            }
 
             $exitCode = Artisan::call('migrate:fresh', ['--force' => true]);
             if ($exitCode !== 0) {
@@ -350,8 +362,13 @@ class InstallerWizard extends Component
     {
         $msg = $th->getMessage();
 
+        // If it's a custom Exception thrown by our logic, it's already user-friendly
+        if ($th instanceof \Exception && !str_contains($msg, 'SQLSTATE') && !str_contains($msg, 'PDOException')) {
+            return $msg;
+        }
+
         if (str_contains($msg, 'SQLSTATE') || str_contains($msg, 'Connection refused')) {
-            return "Unable to connect to the database.";
+            return "Unable to connect to the database. Please check your credentials and make sure the database exists.";
         }
 
         if (str_contains($msg, 'migrate')) {

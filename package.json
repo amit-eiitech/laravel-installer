@@ -1,0 +1,14 @@
+{
+  "name": "eii-laravel-installer",
+  "version": "1.0.0",
+  "description": "Asset build scripts for Laravel Installer (Tailwind v4)",
+  "main": "index.js",
+  "scripts": {
+    "build": "tailwindcss -i ./src/resources/css/installer.css -o ./src/resources/public/css/installer.css --minify",
+    "watch": "tailwindcss -i ./src/resources/css/installer.css -o ./src/resources/public/css/installer.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/cli": "^4.0.0"
+  }
+}

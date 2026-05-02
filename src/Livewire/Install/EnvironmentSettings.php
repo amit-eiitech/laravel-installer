@@ -72,11 +72,10 @@ class EnvironmentSettings extends Component
     #[On('completeStep')]
     public function completeStep(): void
     {
-        // 1. SANITIZZAZIONE: Rimuove spazi vuoti prima e dopo (Trim)
-        // Questo previene errori di copia-incolla
+        // 1. SANITIZATION: Removes whitespace (Trim)
         $this->sanitizeInputs();
 
-        // 2. VALIDAZIONE: Avviene sui dati già puliti
+        // 2. VALIDATION
         $this->validate();
 
         $data = ['app_url' => $this->appUrl];
@@ -92,23 +91,11 @@ class EnvironmentSettings extends Component
             ]);
         }
 
-        if ($this->isMailRequired) {
-            $data = array_merge($data, [
-                'mail_mailer'       => $this->mailMailer,
-                'mail_host'         => $this->mailHost,
-                'mail_port'         => $this->mailPort,
-                'mail_username'     => $this->formatEnvValue($this->mailUsername),
-                'mail_password'     => $this->formatEnvValue($this->mailPassword),
-                'mail_from_address' => $this->mailFromAddress,
-                'mail_from_name'    => $this->formatEnvValue($this->mailFromName),
-            ]);
-        }
-
         $this->dispatch('wizard.stepCompleted', ['data' => $data]);
     }
 
     /**
-     * Rimuove spazi bianchi all'inizio e alla fine di tutti i campi stringa.
+     * Removes whitespace from string fields.
      */
     private function sanitizeInputs(): void
     {
@@ -120,15 +107,6 @@ class EnvironmentSettings extends Component
             $this->dbDatabase = trim($this->dbDatabase);
             $this->dbUsername = trim($this->dbUsername);
             $this->dbPassword = $this->dbPassword ? trim($this->dbPassword) : null;
-        }
-
-        if ($this->isMailRequired) {
-            $this->mailHost = trim($this->mailHost);
-            $this->mailPort = trim($this->mailPort);
-            $this->mailUsername = $this->mailUsername ? trim($this->mailUsername) : null;
-            $this->mailPassword = $this->mailPassword ? trim($this->mailPassword) : null;
-            $this->mailFromAddress = trim($this->mailFromAddress);
-            $this->mailFromName = trim($this->mailFromName);
         }
     }
 

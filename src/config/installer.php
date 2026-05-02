@@ -3,6 +3,9 @@
 return [
 
     'app_name' => 'Eii Laravel Installer',
+    'app_description' => 'Setup Wizard',
+    'app_logo' => null, // Path to your logo (e.g., asset('vendor/installer/img/logo.png'))
+    'custom_css' => null, // Path to a custom CSS file to override/extend default styles
     'run_installer' => true,
 
     /*
@@ -20,7 +23,7 @@ return [
     'steps' => [
         [
             'key' => 'welcome',
-            'label' =>  'Welcome',
+            'label' => 'Welcome',
             'description' => 'Initialize',
             'component' => \Eii\Installer\Livewire\Install\Welcome::class,
         ],
@@ -77,12 +80,12 @@ return [
         'permissions' => [
             'storage/' => 'writable',
             'bootstrap/cache/' => 'writable',
-            'storage/'          => 'writable',
-            'storage/app/'      => 'writable',
+            'storage/' => 'writable',
+            'storage/app/' => 'writable',
             'storage/framework/' => 'writable',
-            'storage/logs/'     => 'writable',
-            'bootstrap/cache/'  => 'writable',
-            '.env'              => 'writable',
+            'storage/logs/' => 'writable',
+            'bootstrap/cache/' => 'writable',
+            '.env' => 'writable',
         ],
         'environment' => [
             'production' => true,       // True for production, False for Local
@@ -90,7 +93,7 @@ return [
             'database' => true,         // Ask for database details. Set to false if there is no database. 
             'mail' => true,
         ],
-        'link_storage' => true,     // True to link storage
+        'link_storage' => true,         // True to link storage
         /*
         | Database Seeding Logic
         | Set 'enabled' to true to run seeders after migrations.

@@ -38,6 +38,12 @@ class InstallerServiceProvider extends ServiceProvider
             \Livewire\Livewire::component('installer::install.create-admin', \Eii\Installer\Livewire\Install\CreateAdmin::class);
             \Livewire\Livewire::component('installer::install.finish', \Eii\Installer\Livewire\Install\Finish::class);
         }
+        // Register commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Eii\Installer\Console\ResetInstallerCommand::class,
+            ]);
+        }
     }
 
     public function register(): void
