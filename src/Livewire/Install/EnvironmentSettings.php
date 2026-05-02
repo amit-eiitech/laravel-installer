@@ -9,6 +9,7 @@ use Livewire\Component;
 
 class EnvironmentSettings extends Component
 {
+    // --- DATABASE PROPERTIES ---
     public bool $isDatabaseRequired = false;
     public string $appUrl = '';
     public string $dbConnection = 'mysql';
@@ -18,17 +19,40 @@ class EnvironmentSettings extends Component
     public ?string $dbUsername = null;
     public ?string $dbPassword = null;
 
+    // --- MAIL PROPERTIES ---
+    // Mail settings are collected in this same step when
+    // installer.requirements.environment.mail is true, avoiding a
+    // separate wizard step for a small set of related fields.
+    public bool $isMailRequired = false;
+    public string $mailMailer = 'smtp';
+    public ?string $mailHost = '127.0.0.1';
+    public ?string $mailPort = '1025';
+    public ?string $mailUsername = null;
+    public ?string $mailPassword = null;
+    public ?string $mailFromAddress = null;
+    public ?string $mailFromName = null;
+
     protected function rules(): array
     {
         $rules = ['appUrl' => 'required|string'];
 
         if ($this->isDatabaseRequired) {
             $rules = array_merge($rules, [
-                'dbHost' => 'required|regex:/^\S*$/u',
-                'dbPort' => 'required|numeric|regex:/^\S*$/u',
+                'dbHost'     => 'required|regex:/^\S*$/u',
+                'dbPort'     => 'required|numeric|regex:/^\S*$/u',
                 'dbDatabase' => 'required|min:1|regex:/^\S*$/u',
                 'dbUsername' => 'required|min:1|regex:/^\S*$/u',
                 'dbPassword' => 'nullable|string',
+            ]);
+        }
+
+        if ($this->isMailRequired) {
+            $rules = array_merge($rules, [
+                'mailMailer'       => 'required|string',
+                'mailHost'         => 'required|string',
+                'mailPort'         => 'required|numeric',
+                'mailFromAddress'  => 'nullable|email',
+                'mailFromName'     => 'nullable|string',
             ]);
         }
 
@@ -38,6 +62,7 @@ class EnvironmentSettings extends Component
     public function mount(): void
     {
         $this->isDatabaseRequired = config('installer.requirements.environment.database', false);
+        $this->isMailRequired     = config('installer.requirements.environment.mail', false);
 
         try {
             $progressFile = config('installer.options.progress_file');
@@ -45,13 +70,21 @@ class EnvironmentSettings extends Component
                 $progress = json_decode(File::get($progressFile), true);
                 $data = $progress['data']['environment'] ?? [];
 
-                $this->appUrl = $data['app_url'] ?? $this->appUrl;
+                $this->appUrl       = $data['app_url']      ?? $this->appUrl;
                 $this->dbConnection = $data['db_connection'] ?? $this->dbConnection;
-                $this->dbHost = $data['db_host'] ?? $this->dbHost;
-                $this->dbPort = $data['db_port'] ?? $this->dbPort;
-                $this->dbDatabase = $data['db_database'] ?? $this->dbDatabase;
-                $this->dbUsername = $data['db_username'] ?? $this->dbUsername;
-                $this->dbPassword = $data['db_password'] ?? $this->dbPassword;
+                $this->dbHost       = $data['db_host']       ?? $this->dbHost;
+                $this->dbPort       = $data['db_port']       ?? $this->dbPort;
+                $this->dbDatabase   = $data['db_database']   ?? $this->dbDatabase;
+                $this->dbUsername   = $data['db_username']   ?? $this->dbUsername;
+                $this->dbPassword   = $data['db_password']   ?? $this->dbPassword;
+
+                $this->mailMailer      = $data['mail_mailer']       ?? $this->mailMailer;
+                $this->mailHost        = $data['mail_host']         ?? $this->mailHost;
+                $this->mailPort        = $data['mail_port']         ?? $this->mailPort;
+                $this->mailUsername    = $data['mail_username']     ?? $this->mailUsername;
+                $this->mailPassword    = $data['mail_password']     ?? $this->mailPassword;
+                $this->mailFromAddress = $data['mail_from_address'] ?? $this->mailFromAddress;
+                $this->mailFromName    = $data['mail_from_name']    ?? $this->mailFromName;
             }
         } catch (\Exception $e) {
             $this->dispatch('wizard.error', ['message' => "Failed to load progress: {$e->getMessage()}"]);
@@ -72,11 +105,7 @@ class EnvironmentSettings extends Component
     #[On('completeStep')]
     public function completeStep(): void
     {
-        // 1. SANITIZZAZIONE: Rimuove spazi vuoti prima e dopo (Trim)
-        // Questo previene errori di copia-incolla
         $this->sanitizeInputs();
-
-        // 2. VALIDAZIONE: Avviene sui dati già puliti
         $this->validate();
 
         $data = ['app_url' => $this->appUrl];
@@ -107,34 +136,28 @@ class EnvironmentSettings extends Component
         $this->dispatch('wizard.stepCompleted', ['data' => $data]);
     }
 
-    /**
-     * Rimuove spazi bianchi all'inizio e alla fine di tutti i campi stringa.
-     */
     private function sanitizeInputs(): void
     {
         $this->appUrl = trim($this->appUrl);
 
         if ($this->isDatabaseRequired) {
-            $this->dbHost = trim($this->dbHost);
-            $this->dbPort = trim($this->dbPort);
+            $this->dbHost     = trim($this->dbHost);
+            $this->dbPort     = trim($this->dbPort);
             $this->dbDatabase = trim($this->dbDatabase);
             $this->dbUsername = trim($this->dbUsername);
             $this->dbPassword = $this->dbPassword ? trim($this->dbPassword) : null;
         }
 
         if ($this->isMailRequired) {
-            $this->mailHost = trim($this->mailHost);
-            $this->mailPort = trim($this->mailPort);
-            $this->mailUsername = $this->mailUsername ? trim($this->mailUsername) : null;
-            $this->mailPassword = $this->mailPassword ? trim($this->mailPassword) : null;
-            $this->mailFromAddress = trim($this->mailFromAddress);
-            $this->mailFromName = trim($this->mailFromName);
+            $this->mailHost        = trim($this->mailHost);
+            $this->mailPort        = trim($this->mailPort);
+            $this->mailUsername    = $this->mailUsername    ? trim($this->mailUsername)    : null;
+            $this->mailPassword    = $this->mailPassword    ? trim($this->mailPassword)    : null;
+            $this->mailFromAddress = $this->mailFromAddress ? trim($this->mailFromAddress) : null;
+            $this->mailFromName    = $this->mailFromName    ? trim($this->mailFromName)    : null;
         }
     }
 
-    /**
-     * Helper to format values for .env file
-     */
     private function formatEnvValue(?string $value): ?string
     {
         if (is_null($value)) {
@@ -148,7 +171,7 @@ class EnvironmentSettings extends Component
         return $value;
     }
 
-    #[Layout('layouts.installer')]
+    #[Layout('installer::layouts.installer')]
     public function render()
     {
         return view('installer::livewire.install.environment-settings');
