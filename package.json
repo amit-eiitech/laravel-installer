@@ -1,6 +1,6 @@
 {
   "name": "eii-laravel-installer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Asset build scripts for Laravel Installer (Tailwind v4)",
   "main": "index.js",
   "scripts": {
