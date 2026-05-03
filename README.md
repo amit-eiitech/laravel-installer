@@ -6,7 +6,7 @@
 [![Laravel Version](https://img.shields.io/badge/laravel-%3E%3D%2010.0-red?style=flat-square)](https://packagist.org/packages/eii/laravel-installer)
 [![License](https://img.shields.io/packagist/l/eii/laravel-installer.svg?style=flat-square)](https://packagist.org/packages/eii/laravel-installer)
 
-![Laravel Installer](https://eiitechsolutions.com/storage/packages/laravel-installer/banner-1.jpg)
+![Laravel Installer](https://eiitechsolutions.com/storage/packages/laravel-installer/banner-1.jpg?v=2)
 
 This package features a multi-step wizard designed for a seamless Laravel application installation. It offers an intuitive interface that guides users through server requirement checks, environment configuration, database setup, and the creation of an initial admin user, all using Livewire components.
 
