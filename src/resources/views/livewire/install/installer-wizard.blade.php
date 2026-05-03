@@ -1,8 +1,9 @@
-<div x-data="{ showWaitScreen: @entangle('showWaitScreen') }">
+<div class="max-h-full" x-data="{ showWaitScreen: @entangle('showWaitScreen') }">
+    {{-- Error --}}
     @if (session('installer.error'))
         <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6 shadow-sm rounded-r-lg">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
+                <div class="shrink-0">
                     <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                     </svg>
@@ -16,6 +17,7 @@
         </div>
     @endif
 
+    {{-- Wait Screen --}}
     <div x-show="showWaitScreen" x-cloak>
         <div class="absolute w-full min-h-screen inset-0 bg-black/10 z-50 flex justify-center items-center">
             <div class="bg-white rounded-xl p-8 shadow-lg flex gap-2 items-center">
@@ -28,14 +30,21 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-10 lg:p-12 flex flex-col lg:flex-row gap-8 lg:gap-12 transition-all duration-500">
+    {{-- Main --}}
+    <div class="bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col lg:flex-row transition-all duration-500">
         <!-- Stepper -->
-        <div class="shrink-0 w-full lg:max-w-[280px] border-b lg:border-b-0 lg:border-r pb-8 lg:pb-0 lg:pr-8">
+        <div class="relative shrink-0 w-full lg:max-w-90 border-b lg:border-b-0 lg:border-r p-6 sm:p-10 lg:p-12 bg-slate-50">
+            @if (config('installer.image_path'))
+                <div class="absolute inset-0">
+                    <img class="w-full h-full object-cover origin-left opacity-75" src="{{ config('installer.image_path') }}" alt="">
+                </div>
+            @endif
+
             <div class="flex flex-col items-start space-y-12 relative">
                 <!-- Background Track -->
-                <div class="absolute left-[15px] top-4 w-0.5 h-[calc(100%-32px)] bg-slate-100 rounded-full"></div>
+                <div class="absolute left-3.75 top-4 w-0.5 h-[calc(100%-32px)] bg-slate-100 rounded-full"></div>
                 <!-- Active Progress -->
-                <div id="progress-line" class="absolute left-[15px] top-4 w-0.5 bg-emerald-500 rounded-full transition-all duration-500" style="height: {{ $steps->count() > 1 ? ($currentIndex / ($steps->count() - 1)) * 100 : 0 }}%"></div>
+                <div id="progress-line" class="absolute left-3.75 top-4 w-0.5 bg-emerald-500 rounded-full transition-all duration-500" style="height: {{ $steps->count() > 1 ? ($currentIndex / ($steps->count() - 1)) * 100 : 0 }}%"></div>
 
                 <!-- Steps -->
                 @foreach ($steps as $index => $s)
@@ -57,8 +66,8 @@
                         @endif
 
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold {{ $index === $currentIndex ? 'text-slate-800' : ($index < $currentIndex ? 'text-slate-600' : 'text-slate-400') }} transition-colors duration-300">{{ $s['label'] }}</p>
-                            <p class="text-xs text-slate-400 truncate">{{ $s['description'] }}</p>
+                            <p class="text-sm font-bold text-slate-800 {{ $index === $currentIndex ? 'opacity-100' : ($index < $currentIndex ? 'opacity-60' : 'opacity-40') }} transition-opacity duration-300">{{ $s['label'] }}</p>
+                            <p class="text-xs text-slate-800 opacity-50 truncate">{{ $s['description'] }}</p>
                         </div>
                     </div>
                 @endforeach
@@ -66,7 +75,7 @@
         </div>
 
         <!-- Step Content -->
-        <div class="flex flex-col grow min-w-0">
+        <div class="flex flex-col grow min-w-0 p-6 sm:p-10 lg:p-12 overflow-auto">
             @if (isset($step['component']))
                 <div class="mb-8">
                     <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">{{ $step['label'] }}</h2>

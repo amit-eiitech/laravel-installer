@@ -6,6 +6,7 @@ return [
     'app_description' => 'Setup Wizard',
     'app_logo' => null, // Path to your logo (e.g., asset('vendor/installer/img/logo.png'))
     'custom_css' => null, // Path to a custom CSS file to override/extend default styles
+    'image_path' => "https://cdn.pixabay.com/photo/2023/09/16/18/18/wallpaper-8257343_1280.png",
     'run_installer' => true,
 
     /*

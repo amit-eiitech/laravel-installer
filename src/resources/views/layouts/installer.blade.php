@@ -23,19 +23,16 @@
     @stack('styles')
 </head>
 
-<body class="bg-[#f8fafc] text-slate-900 antialiased font-sans">
+<body class="relative bg-slate-900 antialiased font-sans">
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 starting:opacity-0 opacity-100 transition-opacity duration-700 relative overflow-hidden">
 
-        <!-- Subtle Background Aesthetics -->
-        <div class="absolute inset-0 z-0 pointer-events-none opacity-[0.4]" style="background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px); background-size: 24px 24px;"></div>
-
-        <div class="w-full max-w-screen-lg z-10">
+        <div class="w-full max-w-5xl z-10">
             <div class="text-center mb-10">
                 @if (config('installer.app_logo'))
                     <img src="{{ config('installer.app_logo') }}" alt="Logo" class="w-16 h-16 mx-auto mb-4 object-contain drop-shadow-sm">
                 @endif
-                <h1 class="text-slate-800 font-extrabold text-3xl tracking-tight">{{ config('installer.app_name', 'Laravel Installer') }}</h1>
-                <p class="text-slate-400 text-sm mt-2 font-medium tracking-widest">{{ config('installer.app_description', 'Setup Wizard') }}</p>
+                <h1 class="text-white font-extrabold text-3xl tracking-tight">{{ config('installer.app_name', 'Laravel Installer') }}</h1>
+                <p class="text-slate-300 text-sm mt-2 font-medium tracking-widest">{{ config('installer.app_description', 'Setup Wizard') }}</p>
             </div>
 
             <main>
@@ -50,6 +47,7 @@
                 </a>
             </div>
         </div>
+
     </div>
 
     @stack('scripts')
