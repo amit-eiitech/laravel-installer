@@ -16,10 +16,9 @@ By including the Laravel installer in your application, you can eliminate the ne
 
 |                                                                                                                                     |                                                                                                                                     |
 | :---------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: |
-| <img width="1200" alt="laravel-installer step-1" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-1.webp"> | <img width="1200" alt="laravel-installer step-2" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-2.webp"> |
-| <img width="1200" alt="laravel-installer step-3" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-3.webp"> | <img width="1200" alt="laravel-installer step-4" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-4.webp"> |
-| <img width="1200" alt="laravel-installer step-5" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-5.webp"> |
-| <img width="1200" alt="laravel-installer step-6" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-6.webp"> |
+| <img width="1200" alt="laravel-installer step-1" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-1.webp?v=2"> | <img width="1200" alt="laravel-installer step-2" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-2.webp?v=2"> |
+| <img width="1200" alt="laravel-installer step-3" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-3.webp?v=2"> | <img width="1200" alt="laravel-installer step-4" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-4.webp?v=2"> |
+| <img width="1200" alt="laravel-installer step-5" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-5.webp?v=2"> | <img width="1200" alt="laravel-installer step-6" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-6.webp?v=2"> |
 
 ## ✨ What’s New in v1.1.2
 
