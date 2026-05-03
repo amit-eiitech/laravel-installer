@@ -69,12 +69,10 @@ By including the Laravel installer in your application, you can eliminate the ne
 composer require eii/laravel-installer
 ```
 
-2. After installation, publish the package's assets and configuration:
+2. After installation, publish the package's assets and configuration by running the install command:
 
 ```bash
-php artisan vendor:publish --provider="Eii\Installer\InstallerServiceProvider" --tag=config
-php artisan vendor:publish --provider="Eii\Installer\InstallerServiceProvider" --tag=views
-php artisan vendor:publish --provider="Eii\Installer\InstallerServiceProvider" --tag=assets
+php artisan installer:install
 ```
 
 3. Update the config/installer. (app_name, requirements, etc.)

@@ -41,6 +41,7 @@ class InstallerServiceProvider extends ServiceProvider
         // Register commands
         if ($this->app->runningInConsole()) {
             $this->commands([
+                \Eii\Installer\Console\InstallCommand::class,
                 \Eii\Installer\Console\ResetInstallerCommand::class,
             ]);
         }
