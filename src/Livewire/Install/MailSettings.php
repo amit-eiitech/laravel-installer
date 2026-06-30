@@ -56,7 +56,7 @@ class MailSettings extends Component
             $progressFile = config('installer.options.progress_file');
             if (File::exists($progressFile)) {
                 $progress = json_decode(File::get($progressFile), true);
-                $data = $progress['data']['environment'] ?? [];
+                $data = $progress['data']['mail'] ?? []; // ← Bug fixed. 
 
                 $this->mailMailer = $data['mail_mailer'] ?? $this->mailMailer;
                 $this->mailHost = $data['mail_host'] ?? $this->mailHost;
@@ -98,6 +98,8 @@ class MailSettings extends Component
     {
         $this->validate();
 
+        $data = []; // ← Bug fixed. 
+
         if ($this->isMailRequired) {
             $data = [
                 'mail_mailer' => $this->mailMailer,
@@ -118,7 +120,8 @@ class MailSettings extends Component
      *
      * @return \Illuminate\View\View
      */
-    #[Layout('layouts.installer')]
+    // #[Layout('layouts.installer')]
+    #[Layout('installer::layouts.installer')]
     public function render()
     {
         return view('installer::livewire.install.mail-settings');

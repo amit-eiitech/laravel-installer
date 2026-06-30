@@ -126,7 +126,7 @@ class EnvironmentSettings extends Component
         return $value;
     }
 
-    #[Layout('layouts.installer')]
+    #[Layout('installer::layouts.installer')] // Livewire 4 syntax
     public function render()
     {
         return view('installer::livewire.install.environment-settings');

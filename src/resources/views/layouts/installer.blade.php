@@ -20,6 +20,8 @@
         <link rel="stylesheet" href="{{ config('installer.custom_css') }}">
     @endif
 
+    @livewireStyles
+
     @stack('styles')
 </head>
 
@@ -51,6 +53,8 @@
     </div>
 
     @stack('scripts')
+
+    @livewireScripts
 </body>
 
 </html>

@@ -28,13 +28,13 @@ class InstallCommand extends Command
         $this->info('Installing Laravel Installer...');
 
         $this->info('Publishing configuration...');
-        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'config']);
+        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'config', '--force' => true]);
 
         $this->info('Publishing assets...');
-        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'assets']);
+        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'assets', '--force' => true]);
 
         $this->info('Publishing views...');
-        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'views']);
+        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'views', '--force' => true]);
 
         $this->info('Laravel Installer installed successfully.');
 

@@ -80,7 +80,7 @@ class CreateAdmin extends Component
 
             // Check config and trait existence
             $spatieConfig = config('installer.spatie');
-            
+
             if ($spatieConfig['enabled'] && method_exists($user, 'assignRole')) {
                 $roleTable = config('permission.table_names.roles', 'roles');
                 $roleExists = \Illuminate\Support\Facades\DB::table($roleTable)
@@ -109,7 +109,7 @@ class CreateAdmin extends Component
      *
      * @return \Illuminate\View\View
      */
-    #[Layout('layouts.installer')]
+    #[Layout('installer::layouts.installer')] // Livewire 4 syntax
     public function render()
     {
         return view('installer::livewire.install.create-admin');

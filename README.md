@@ -81,7 +81,7 @@ php artisan installer:install
 
 - Navigate to `/install` in your browser to start the wizard.
 - Follow the wizard steps to complete the installation.
-- The wizard steps are defined in the config/laravel-installer.php file. You can add, remove, or reorder steps as needed.
+- The wizard steps are defined in the `config/installer.php` file. You can add, remove, or reorder steps as needed.
 - Modify the views published in `resources/views/vendor/installer` as needed.
 
 ## Configuration
