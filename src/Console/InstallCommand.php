@@ -11,7 +11,7 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'installer:install';
+    protected $signature = 'installer:install {--force : Overwrite existing published files}';
 
     /**
      * The console command description.
@@ -27,14 +27,22 @@ class InstallCommand extends Command
     {
         $this->info('Installing Laravel Installer...');
 
+        $force = $this->option('force');
+
+        $publishOptions = ['--provider' => 'Eii\Installer\InstallerServiceProvider'];
+
+        if ($force && $this->confirm('Overwrite existing published files?', true)) {
+            $publishOptions['--force'] = true;
+        }
+
         $this->info('Publishing configuration...');
-        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'config', '--force' => true]);
+        $this->call('vendor:publish', array_merge($publishOptions, ['--tag' => 'config']));
 
         $this->info('Publishing assets...');
-        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'assets', '--force' => true]);
+        $this->call('vendor:publish', array_merge($publishOptions, ['--tag' => 'assets']));
 
         $this->info('Publishing views...');
-        $this->call('vendor:publish', ['--provider' => 'Eii\Installer\InstallerServiceProvider', '--tag' => 'views', '--force' => true]);
+        $this->call('vendor:publish', array_merge($publishOptions, ['--tag' => 'views']));
 
         $this->info('Laravel Installer installed successfully.');
 

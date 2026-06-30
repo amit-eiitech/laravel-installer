@@ -20,6 +20,30 @@ By including the Laravel installer in your application, you can eliminate the ne
 | <img width="1200" alt="laravel-installer step-3" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-3.webp?v=2"> | <img width="1200" alt="laravel-installer step-4" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-4.webp?v=2"> |
 | <img width="1200" alt="laravel-installer step-5" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-5.webp?v=2"> | <img width="1200" alt="laravel-installer step-6" src="https://eiitechsolutions.com/storage/packages/laravel-installer/step-6.webp?v=2"> |
 
+
+
+## ✨ What's New in v2.0.0
+
+### 1️⃣ Livewire 4 Support
+- Fully compatible with Livewire 4.x (now required).
+- Updated component registration to use namespace-based resolution (`addNamespace`).
+- Updated routing to use `Route::livewire()` syntax.
+- Added `@livewireStyles` / `@livewireScripts` to installer layout.
+- Fixed `#[Layout]` attribute syntax to use namespace-separated paths.
+
+### 2️⃣ Bug Fixes
+- Fixed `MailSettings::mount()` incorrectly reading environment data instead of mail data.
+- Fixed undefined `$data` variable when mail step is optional.
+- Fixed admin password being persisted to the progress file.
+
+### 3️⃣ Optional Force Overwrite
+- Added `--force` option to `installer:install` command for safer re-installation.
+- Without `--force`: preserves your customizations (views, config, assets are not overwritten).
+- With `--force`: prompts for confirmation before overwriting existing published files.
+
+### ⚠️ Breaking Changes for v1.x Users
+- **Livewire 3 is no longer supported.** Upgrade to Livewire 4 before updating this package.
+- Published views/layouts from v1.x may need to be republished via `php artisan installer:install`.
 ## ✨ What’s New in v1.1.2
 
 ### 1️⃣ Loading State for Action Buttons
@@ -35,7 +59,7 @@ By including the Laravel installer in your application, you can eliminate the ne
   - SMTP passwords containing spaces work correctly
   - No unexpected server errors (HTTP 500) during mail configuration
 
-## 3️⃣ Spatie Permission Compatibility
+### 3️⃣ Spatie Permission Compatibility
 
 - Added compatibility with spatie/laravel-permission
 - Ensures smooth integration for applications using role & permission management
@@ -56,10 +80,10 @@ By including the Laravel installer in your application, you can eliminate the ne
 
 ## Requirements
 
-- PHP >= 8.1
+- PHP >= 8.2
 - Laravel >= 10.0
 - Composer >= 2.0
-- Livewire >= 3.0
+- Livewire >= 4.0
 
 ## Installation
 
@@ -77,6 +101,17 @@ php artisan installer:install
 
 3. Update the config/installer. (app_name, requirements, etc.)
 
+## Updating
+
+If you are upgrading from a previous version or need to republish assets, run the command with the `--force` flag:
+
+```bash
+php artisan installer:install --force
+```
+
+> 💡 Using `--force` will prompt you for confirmation before overwriting existing files. Without this flag, your customizations are preserved.
+
+
 ## Usage
 
 - Navigate to `/install` in your browser to start the wizard.
@@ -86,7 +121,7 @@ php artisan installer:install
 
 ## Configuration
 
-The configuration file is located at `config/laravel-installer.php`. Key options include:
+The configuration file is located at `config/installer.php`. Key options include:
 
 - `lock_file`: Path to the installation lock file to prevent re-running the installer.
 - `redirect_after_install`: URL to redirect to after successful installation.
