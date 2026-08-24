@@ -120,7 +120,7 @@ class InstallerWizard extends Component
         $this->showWaitScreen = true;
 
         $progressFile = config('installer.options.progress_file');
-        
+
         $progress = File::exists($progressFile)
             ? json_decode(File::get($progressFile), true)
             : ['data' => []];
@@ -145,10 +145,9 @@ class InstallerWizard extends Component
 
             $nextStepKey = $this->getNextStepKey();
 
-            return $this->redirect(route('install.step', $nextStepKey ?? config('installer.redirect_after_install', '/')));
-
+            return $this->redirect(route('install.step', $nextStepKey ?? config('installer.options.redirect_after_install', '/')));
         } catch (\Throwable $th) {
-            
+
             // Generate user-friendly message
             $friendlyMessage = $this->friendlyErrorMessage($th);
 
@@ -205,11 +204,10 @@ class InstallerWizard extends Component
                 $testConfig['password'] = $data['db_password'];
 
                 config(['database.connections.installer_test' => $testConfig]);
-                
+
                 // Force a fresh connection test
                 DB::purge('installer_test');
                 DB::connection('installer_test')->getPdo();
-
             } catch (\Throwable $e) {
                 Log::error("Installer: Database connection failed: " . $e->getMessage());
                 throw new \Exception("Could not connect to the database. Please verify your credentials and ensure the database '{$data['db_database']}' exists.");
@@ -233,11 +231,12 @@ class InstallerWizard extends Component
                 throw new \Exception("Database migration failed.");
             }
 
+
             // Run Dynamic Seeding inside a Transaction
             $seedingConfig = config('installer.requirements.seeding');
-            
+
             if ($seedingConfig && ($seedingConfig['enabled'] ?? false)) {
-                
+
                 // start transaction
                 DB::beginTransaction();
 
@@ -264,7 +263,6 @@ class InstallerWizard extends Component
 
                     // if we reach here, all seeders ran successfully
                     DB::commit();
-
                 } catch (\Throwable $e) {
                     // on error, rollback the transaction
                     DB::rollBack();
@@ -320,10 +318,7 @@ class InstallerWizard extends Component
         ];
 
         foreach ($pairs as $key => $value) {
-            $pattern = "/^{$key}=.*$/m";
-            $env = preg_match($pattern, $env)
-                ? preg_replace($pattern, "{$key}={$value}", $env)
-                : $env . PHP_EOL . "{$key}={$value}";
+            $this->setEnvValue($env, $key, $value);
         }
 
         File::put($envPath, trim($env));
@@ -349,13 +344,20 @@ class InstallerWizard extends Component
         ];
 
         foreach ($pairs as $key => $value) {
-            $pattern = "/^{$key}=.*$/m";
-            $env = preg_match($pattern, $env)
-                ? preg_replace($pattern, "{$key}={$value}", $env)
-                : $env . PHP_EOL . "{$key}={$value}";
+            $this->setEnvValue($env, $key, $value);
         }
 
         File::put($envPath, trim($env));
+    }
+
+    private function setEnvValue(string &$env, string $key, mixed $value): void
+    {
+        $line = "{$key}={$value}";
+        $pattern = '/^[ \t]*#?[ \t]*' . preg_quote($key, '/') . '=.*$/m';
+
+        $env = preg_match($pattern, $env)
+            ? preg_replace_callback($pattern, fn() => $line, $env)
+            : rtrim($env) . PHP_EOL . $line;
     }
 
     private function friendlyErrorMessage(\Throwable $th): string

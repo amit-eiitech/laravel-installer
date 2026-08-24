@@ -22,6 +22,25 @@ By including the Laravel installer in your application, you can eliminate the ne
 
 
 
+## ✨ What's New in v2.0.1
+
+### 1️⃣ Installer Reliability
+- Installer requests now use file-based session/cache storage at runtime, preventing fresh installations from failing when the host app uses database sessions before the `sessions` table exists.
+- Reverted environment file updates to run after migrations/seeding to keep the existing MySQL installer flow stable.
+
+### 2️⃣ Security Fixes
+- Masked sensitive values such as database, mail, and admin passwords before exposing final settings in Livewire public state or downloadable settings exports.
+
+### 3️⃣ Environment File Improvements
+- Improved `.env` updates so commented placeholder lines like `# DB_HOST=127.0.0.1` are replaced instead of creating duplicate keys.
+- Fixed redirect configuration lookup to use `installer.options.redirect_after_install`.
+
+### 4️⃣ Documentation and UX
+- Added MySQL-only support notes. SQLite is not supported in this release.
+- Added clearer database setup guidance and field hints in the environment settings step.
+
+Thanks to [@vince844](https://github.com/vince844) for raising and documenting these issues.
+
 ## ✨ What's New in v2.0.0
 
 ### 1️⃣ Livewire 4 Support
@@ -44,6 +63,7 @@ By including the Laravel installer in your application, you can eliminate the ne
 ### ⚠️ Breaking Changes for v1.x Users
 - **Livewire 3 is no longer supported.** Upgrade to Livewire 4 before updating this package.
 - Published views/layouts from v1.x may need to be republished via `php artisan installer:install`.
+
 ## ✨ What’s New in v1.1.2
 
 ### 1️⃣ Loading State for Action Buttons
@@ -84,6 +104,9 @@ By including the Laravel installer in your application, you can eliminate the ne
 - Laravel >= 10.0
 - Composer >= 2.0
 - Livewire >= 4.0
+- MySQL database server
+
+> **Database Support:** This package is currently designed and tested for MySQL databases only. SQLite is not supported in the current version and will not work correctly with the installer flow. SQLite support is planned for a future version.
 
 ## Installation
 
@@ -134,7 +157,8 @@ The configuration file is located at `config/installer.php`. Key options include
   php artisan installer:reset
   ```
 - **Installation Fails on Requirements**: Ensure your server meets the listed requirements. Check the Laravel documentation for setup guides.
-- **Database Connection Issues**: Verify your `.env` credentials and that the database server is running.
+- **Database Connection Issues**: Verify your `.env` credentials, make sure your MySQL server is running, and confirm that you have created an empty MySQL database before continuing through the installer.
+- **SQLite Databases**: SQLite is not supported in the current version. Please use MySQL for now.
 - **Livewire Not Working**: Make sure Livewire is properly installed and assets are published.
 - **For more help, check the issues on GitHub or open a new one.**
 

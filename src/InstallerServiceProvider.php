@@ -8,6 +8,8 @@ class InstallerServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->configureInstallerStorage();
+
         // Assets (CSS/JS/images etc.)
         $this->publishes([
             __DIR__ . '/resources/public' => public_path('vendor/installer'),
@@ -40,6 +42,44 @@ class InstallerServiceProvider extends ServiceProvider
                 \Eii\Installer\Console\ResetInstallerCommand::class,
             ]);
         }
+    }
+
+    protected function configureInstallerStorage(): void
+    {
+        if ($this->app->runningInConsole() || ! $this->isInstallerRequest()) {
+            return;
+        }
+
+        // Fresh Laravel applications may use database-backed sessions/cache by default.
+        // During installation the required database tables may not exist yet, so keep
+        // installer requests independent from the application's database state.
+        config([
+            'session.driver' => 'file',
+            'session.connection' => null,
+            'cache.default' => 'file',
+        ]);
+    }
+
+    protected function isInstallerRequest(): bool
+    {
+        $request = request();
+
+        if ($request->is('install', 'install/*')) {
+            return true;
+        }
+
+        return $this->isInstallerReferer($request->headers->get('referer'));
+    }
+
+    protected function isInstallerReferer(?string $referer): bool
+    {
+        if (empty($referer)) {
+            return false;
+        }
+
+        $path = trim((string) parse_url($referer, PHP_URL_PATH), '/');
+
+        return $path === 'install' || str_starts_with($path, 'install/');
     }
 
     public function register(): void

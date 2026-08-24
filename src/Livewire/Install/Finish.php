@@ -24,7 +24,9 @@ class Finish extends Component
             $progressFile = config('installer.options.progress_file');
 
             if (File::exists($progressFile)) {
-                $this->settings = json_decode(File::get($progressFile), true)['data'] ?? [];
+                $settings = json_decode(File::get($progressFile), true)['data'] ?? [];
+                $this->settings = $this->maskSensitiveData($settings);
+
                 try {
                     File::delete($progressFile);
                 } catch (\Exception $e) {
@@ -86,6 +88,49 @@ class Finish extends Component
                 echo "Error: {$e->getMessage()}";
             }, 'error.txt', ['Content-Type' => 'text/plain']);
         }
+    }
+
+    /**
+     * Recursively mask sensitive values before assigning data to Livewire public properties.
+     *
+     * @param mixed $data Data to sanitize.
+     * @return mixed
+     */
+    protected function maskSensitiveData($data)
+    {
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->maskSensitiveData($value);
+                continue;
+            }
+
+            if ($this->isSensitiveKey((string) $key)) {
+                $data[$key] = ($value !== null && $value !== '') ? '********' : $value;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Determine whether a settings key contains sensitive data.
+     *
+     * @param string $key Settings key.
+     * @return bool
+     */
+    protected function isSensitiveKey(string $key): bool
+    {
+        $key = strtolower($key);
+
+        return str_contains($key, 'password')
+            || str_contains($key, 'secret')
+            || str_contains($key, 'token')
+            || str_contains($key, 'api_key')
+            || str_contains($key, 'apikey');
     }
 
     /**
