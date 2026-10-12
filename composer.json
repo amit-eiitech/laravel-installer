@@ -1,5 +1,4 @@
 {
-  "version": "2.0.1",
   "name": "eii/laravel-installer",
   "description": "A package to install Laravel applications with wizard steps.",
   "type": "library",
